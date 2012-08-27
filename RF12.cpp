@@ -43,6 +43,19 @@
 #define SPI_MISO    50    // PB3, pin 22
 #define SPI_SCK     52    // PB1, pin 20
 
+#elif defined(__AVR_ATmega1284P__)
+
+#define RFM_IRQ     2     // The PIN the IRQ is on
+#define RFM_IRQ_NO  2     // The IRQ number
+#define SS_DDR      DDRC
+#define SS_PORT     PORTC
+#define SS_BIT      5
+
+#define SPI_SS      4     // PB4, pin 5
+#define SPI_MOSI    5     // PB5, pin 6
+#define SPI_MISO    6     // PB6, pin 7
+#define SPI_SCK     7     // PB7, pin 8
+
 #elif defined(__AVR_ATmega644P__)
 
 #define RFM_IRQ     10
@@ -448,10 +461,17 @@ uint8_t rf12_initialize (uint8_t id, uint8_t band, uint8_t g) {
             bitClear(PCMSK1, RFM_IRQ - 14);
     #endif
 #else
+    #if RFM_IRQ_NO  // If IRQ number is defined use that, if not use IRQ0
+    if ((nodeid & NODE_ID) != 0)
+        attachInterrupt(RFM_IRQ_NO, rf12_interrupt, LOW);
+    else
+        detachInterrupt(RFM_IRQ_NO);
+    #else
     if ((nodeid & NODE_ID) != 0)
         attachInterrupt(0, rf12_interrupt, LOW);
     else
         detachInterrupt(0);
+    #endif
 #endif
     
     return nodeid;
